@@ -16,12 +16,15 @@ class Todolist:
 
         # Variables
         self.width = 500
+        self.small_w_width = 380
         self.height = 400
+        self.small_w_height = 160
         self.frame_height1 = 50
         self.frame_height2 = 70
         self.frame_height3 = 100
         self.button_width = 7
         self.dimensions = f"{self.width}x{self.height}"
+        self.small_w_dimensions = f"{self.small_w_width}x{self.small_w_height}"
 
         # Instantiating window/screen/display
         self.window = Tk()
@@ -44,7 +47,7 @@ class Todolist:
         app_name.place(x=5, y=5)
         
         # table frame
-        frame_table = Frame(self.window, width=self.width, height=self.frame_height3, bg=self.DARK_BG)
+        frame_table = Frame(self.window, width=self.small_w_width, height=self.frame_height3, bg=self.DARK_BG)
         frame_table.grid(row=2, column=0, columnspan=2, padx=10, pady=2, sticky=NW)
        
         # function
@@ -52,7 +55,8 @@ class Todolist:
             global tree
             
             list_header = ['Tasks', 'Done']
-            # demo_list = crud_method.view()
+            
+            task_list = crud_method.view() # stored tasks
             
             tree = ttk.Treeview(frame_table, selectmode="extended", columns=list_header, show="headings")
             
@@ -71,12 +75,11 @@ class Todolist:
             tree.heading(1, text="Done", anchor=NW)
             
             # tree colums
-            tree.column(0, width=400, anchor='nw')
-            tree.column(1, width=50, anchor='nw')
+            tree.column(0, width=380, anchor='nw')
+            tree.column(1, width=80, anchor='nw')
             
-            demo_list = [["Set up a readme file","done"], ["push to github", '']]
-            
-            for item in demo_list:
+            # iterating through task for display
+            for item in task_list:
                 tree.insert('', 'end', values=item)
        
         show()        
@@ -86,10 +89,7 @@ class Todolist:
         name_label.place(x=10, y=20)
         entry_name = Entry(frame_down, width=25, justify='left', highlightthickness=1, relief='solid')
         entry_name.place(x=105, y=22)
-        
-        def show():
-            pass
-        
+                
         # pass data in function
         def insert():
                 Name = entry_name.get() # get input
@@ -98,16 +98,71 @@ class Todolist:
                     messagebox.showwarning('Error', 'Please enter task')
                 
                 # if its not empty
-                data = [Name, False]
+                data = [Name, "Not Done"]
                 crud_method.add(data)
-                messagebox.showinfo('Success', 'Task added sucessfull')
+                show()
                 entry_name.delete(0, 'end')
+                
         
         def set_update():
-            pass
+            # row selected
+            tree_data = tree.focus()
+            tree_dictionary = tree.item(tree_data)
+            tree_list = tree_dictionary['values']
+            
+            if tree_list == "":
+                return messagebox.showerror("Error", "Please select to-do to edit in task list")
+                
+            Task = str(tree_list[0])
+            Completed = str(tree_list[1])
+
+            # Init frame
+             # Instantiating window/screen/display
+            edit_window = Tk()
+            edit_window.title("Update task")
+            edit_window.geometry(self.small_w_dimensions)
+            edit_window.configure(background=self.WHITE)
+            edit_frame = Frame(edit_window, width=self.width, height=self.small_w_height)
+            edit_frame.grid(row=0, column=0, padx=0, pady=1)
+            
+            edit_label = Label(edit_frame, text="Edit Task *", width=20, height=3, font=('Arial 10'), anchor=NW)
+            edit_label.place(x=10, y=20)
+            entry_edit = Entry(edit_frame, width=40, justify='left', highlightthickness=2, relief='solid')
+            entry_edit.insert(0, Task)
+            entry_edit.place(x=100, y=20)
+            
+            done_label = Label(edit_frame, text="Compeleted ?", width=15, height=1, font=('Ivy 10'), anchor=NW)
+            done_label.place(x=10, y=60)
+            combo_done = ttk.Combobox(edit_frame, width=37)
+            combo_done['values'] = [ 'Done', 'Not Done']
+                
+            combo_done.insert(0, Completed)
+            combo_done.place(x=100, y=60)
+            
+            def save():
+                Done = combo_done.get()
+                Edit = entry_edit.get()
+                
+                data = [Edit, Done]
+                crud_method.edit(data, Task)
+                show()
+                edit_window.destroy()
+            # add button
+            edit_button = Button(edit_frame, text="Save", width=self.button_width, height=1, font=('Arial 8 bold'), bg=self.PRIMARY, fg=self.WHITE, command=save)
+            edit_button.place(x=285, y=100)
+        
         
         def to_remove():
-            pass
+            try:
+                tree_data = tree.focus()
+                tree_dictionary = tree.item(tree_data)
+                tree_list = tree_dictionary['values']
+                task = str(tree_list[0])
+                crud_method.remove(task)                
+                show()
+            except:
+                messagebox.showinfo('Error',  "Select to-do from phone task list")
+            
                
         # add button
         add_button = Button(frame_down, text="Add", width=self.button_width, height=1, font=('Arial 8 bold'), bg=self.SECONDARY, fg=self.WHITE, command=insert)
