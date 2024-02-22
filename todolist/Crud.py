@@ -1,15 +1,18 @@
+import csv;
+
 class CRUD():
 
     def __init__(self):
         self.tasks = []
 
     # create task
-    def add(self, todo):
-        self.tasks.append({"task": todo, "done": False})
-        return self.tasks
+    def add(todo):
+        with open('data.csv', 'a+', newline='') as file:
+            writer = csv.writer(file)
+            writer.writerow(todo)
 
         # create task
-    def add(self, todo):
+    def edit(self, todo):
         self.tasks.append({"task": todo, "done": False})
         return self.tasks
 
